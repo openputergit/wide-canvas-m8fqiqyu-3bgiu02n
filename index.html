@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="loginSection" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <select id="userType" class="w-full mb-4 p-2 border rounded">
+                <option value="principal">Principal</option>
+                <option value="teacher">Teacher</option>
+            </select>
+            <input type="text" id="username" placeholder="Username" class="w-full mb-4 p-2 border rounded">
+            <input type="password" id="password" placeholder="Password" class="w-full mb-4 p-2 border rounded">
+            <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
+        </div>
+    </div>
+
+    <!-- Principal Dashboard -->
+    <div id="principalDashboard" class="hidden min-h-screen">
+        <nav class="bg-blue-600 text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Principal Dashboard</h1>
+                <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded">Logout</button>
+            </div>
+        </nav>
+
+        <div class="container mx-auto p-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-2">Total Students</h3>
+                    <p id="totalStudents" class="text-3xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-2">Present Students</h3>
+                    <p id="presentStudents" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-2">Present Teachers</h3>
+                    <p id="presentTeachers" class="text-3xl font-bold text-purple-600">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow mb-8">
+                <h3 class="text-xl font-bold mb-4">Generate Fee Receipt</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <input type="text" id="studentName" placeholder="Student Name" class="p-2 border rounded">
+                    <input type="text" id="studentClass" placeholder="Class" class="p-2 border rounded">
+                    <input type="number" id="feeAmount" placeholder="Fee Amount" class="p-2 border rounded">
+                </div>
+                <button onclick="generateFeeReceipt()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Generate PDF
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Today's Teacher Attendance</h3>
+                <div id="teacherAttendanceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Teacher attendance will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard -->
+    <div id="teacherDashboard" class="hidden min-h-screen">
+        <nav class="bg-green-600 text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Teacher Dashboard</h1>
+                <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded">Logout</button>
+            </div>
+        </nav>
+
+        <div class="container mx-auto p-4">
+            <div class="bg-white p-6 rounded-lg shadow mb-8">
+                <h3 class="text-xl font-bold mb-4">Mark Your Attendance</h3>
+                <div class="mb-4">
+                    <input type="file" id="teacherPhoto" accept="image/*" class="mb-4">
+                    <button onclick="markTeacherAttendance()" id="markAttendanceBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Mark Attendance
+                    </button>
+                </div>
+                <p id="attendanceStatus" class="text-sm text-gray-600"></p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Student Attendance</h3>
+                <select id="classSelect" class="w-full md:w-auto mb-4 p-2 border rounded">
+                    <option value="">Select Class</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                </select>
+                <div id="studentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Student list will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated data
+        let students = {
+            'LKG': ['Student 1', 'Student 2', 'Student 3'],
+            'UKG': ['Student 4', 'Student 5', 'Student 6'],
+            '1': ['Student 7', 'Student 8', 'Student 9'],
+            // Add more classes and students as needed
+        };
+
+        let teacherAttendance = [];
+        let studentAttendance = {};
+
+        function login() {
+            const userType = document.getElementById('userType').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            document.getElementById('loginSection').classList.add('hidden');
+            if (userType === 'principal') {
+                document.getElementById('principalDashboard').classList.remove('hidden');
+                updatePrincipalDashboard();
+            } else {
+                document.getElementById('teacherDashboard').classList.remove('hidden');
+                checkTeacherAttendanceTime();
+            }
+        }
+
+        function logout() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('principalDashboard').classList.add('hidden');
+            document.getElementById('teacherDashboard').classList.add('hidden');
+        }
+
+        function updatePrincipalDashboard() {
+            document.getElementById('totalStudents').textContent = '150'; // Example number
+            document.getElementById('presentStudents').textContent = '142'; // Example number
+            document.getElementById('presentTeachers').textContent = teacherAttendance.length;
+
+            // Update teacher attendance list
+            const teacherList = document.getElementById('teacherAttendanceList');
+            teacherList.innerHTML = teacherAttendance.map(teacher => `
+                <div class="flex items-center p-4 border rounded">
+                    <img src="${teacher.photo}" alt="Teacher photo" class="w-16 h-16 rounded-full object-cover mr-4">
+                    <div>
+                        <p class="font-bold">${teacher.name}</p>
+                        <p class="text-sm text-gray-600">${teacher.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateFeeReceipt() {
+            const studentName = document.getElementById('studentName').value;
+            const studentClass = document.getElementById('studentClass').value;
+            const feeAmount = document.getElementById('feeAmount').value;
+
+            if (!studentName || !studentClass || !feeAmount) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const receipt = document.createElement('div');
+            receipt.innerHTML = `
+                <div class="p-8">
+                    <h2 class="text-2xl font-bold mb-4">Fee Receipt</h2>
+                    <p class="mb-2">Student Name: ${studentName}</p>
+                    <p class="mb-2">Class: ${studentClass}</p>
+                    <p class="mb-2">Amount: ₹${feeAmount}</p>
+                    <p class="mb-2">Date: ${new Date().toLocaleDateString()}</p>
+                </div>
+            `;
+
+            html2pdf().from(receipt).save(`fee_receipt_${studentName}.pdf`);
+        }
+
+        function checkTeacherAttendanceTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const currentTime = hours + minutes/60;
+
+            const attendanceBtn = document.getElementById('markAttendanceBtn');
+            const status = document.getElementById('attendanceStatus');
+
+            if (currentTime > 7.5) { // 7:30 AM
+                attendanceBtn.disabled = true;
+                status.textContent = 'Attendance can only be marked before 7:30 AM';
+                status.classList.add('text-red-500');
+            } else {
+                attendanceBtn.disabled = false;
+                status.textContent = 'You can mark your attendance';
+                status.classList.add('text-green-500');
+            }
+        }
+
+        function markTeacherAttendance() {
+            const photoInput = document.getElementById('teacherPhoto');
+            if (!photoInput.files[0]) {
+                alert('Please upload your photo');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                teacherAttendance.push({
+                    name: 'Teacher Name', // In real app, get from login info
+                    photo: e.target.result,
+                    time: new Date().toLocaleTimeString()
+                });
+                alert('Attendance marked successfully!');
+            };
+            reader.readAsDataURL(photoInput.files[0]);
+        }
+
+        document.getElementById('classSelect').addEventListener('change', function(e) {
+            const selectedClass = e.target.value;
+            const studentsList = document.getElementById('studentsList');
+            
+            if (!selectedClass) {
+                studentsList.innerHTML = '';
+                return;
+            }
+
+            studentsList.innerHTML = students[selectedClass].map(student => `
+                <div class="flex items-center justify-between p-4 border rounded">
+                    <span>${student}</span>
+                    <select class="p-2 border rounded" onchange="updateStudentAttendance('${selectedClass}', '${student}', this.value)">
+                        <option value="">Select</option>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                    </select>
+                </div>
+            `).join('');
+        });
+
+        function updateStudentAttendance(className, student, status) {
+            if (!studentAttendance[className]) {
+                studentAttendance[className] = {};
+            }
+            studentAttendance[className][student] = status;
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
